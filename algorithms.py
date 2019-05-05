@@ -28,9 +28,15 @@ def get_value(pi, q):
         v[s] = s1+s2
     return v
 
+def soften(a, eps):
+    return (1-eps, eps) if a == 0 else (eps, 1-eps)
+
+def greedy(s, q):
+    return HIT if q[(s, HIT)] > q[(s, STICK)] else STICK
+
 class MCExploringStartsAlgorithm:
     @staticmethod
-    def train(gamma, epochs):
+    def train(gamma, n_episodes):
         q = dict()
         qCounters = dict()
         pi = dict()
@@ -41,7 +47,7 @@ class MCExploringStartsAlgorithm:
             qCounters[(s, 1)] = 0
             pi[s] = random.choice(((1, 0), (0, 1)))
 
-        for i in range(epochs):
+        for i in range(n_episodes):
             episode = generate_episode(random.choice(all_states), pi)
             rewards = dict()
             for s, a, _ in episode:
@@ -56,14 +62,14 @@ class MCExploringStartsAlgorithm:
                 qCounters[sa] += 1
                 q[sa] = q[sa] + 1 / qCounters[sa] * (r - q[sa])
                 s, a = sa
-                a = HIT if q[(s, HIT)] > q[(s, STICK)] else STICK
+                a = greedy(s, q)
                 pi[s] = (1-a, a)
 
         return pi, q, get_value(pi, q)
 
 class MCEpsiSoftAlgorithm:
     @staticmethod
-    def train(gamma, eps, epochs):
+    def train(gamma, eps, n_episodes):
         q = dict()
         qCounters = dict()
         pi = dict()
@@ -74,7 +80,7 @@ class MCEpsiSoftAlgorithm:
             qCounters[(s, 1)] = 0
             pi[s] = random.choice(((1-eps, eps), (eps, 1-eps)))
 
-        for i in range(epochs):
+        for i in range(n_episodes):
             while True:
                 start = get_start_state()
                 if start[1] not in ("tie", "natural"):
@@ -93,16 +99,69 @@ class MCEpsiSoftAlgorithm:
                 qCounters[sa] += 1
                 q[sa] = q[sa] + 1 / qCounters[sa] * (r - q[sa])
                 s, _ = sa
-                prob = [0, 0]
-                if q[(s, HIT)] > q[(s, STICK)]:
-                    prob[HIT] = 1-eps
-                    prob[STICK] = eps
-                else:
-                    prob[HIT] = eps
-                    prob[STICK] = 1-eps
-                pi[s] = prob
+                a = greedy(s, q)
+                pi[s] = soften(a, eps)
 
         return pi, q, get_value(pi, q)
+
+class TDSarsaAlgorithm:
+    @staticmethod
+    def train(gamma, eps, alfa, n_episodes):
+        q = dict()
+        pi = dict()
+        for s in all_states:
+            q[(s, 0)] = np.random.normal(0, 0.1)
+            q[(s, 1)] = np.random.normal(0, 0.1)
+            pi[s] = soften(greedy(s, q), eps)
+
+        for s in [(-1, 'end', -1), (-1, 'burst', -1)]:
+            pi[s] = (0, 1)
+            for a in (0, 1):
+                q[(s, a)] = 0
+
+        for i in range(n_episodes):
+            while True:
+                s = get_start_state()
+                if s[1] not in ("tie", "natural"):
+                    break
+            a = np.random.choice((0, 1), p=pi[s])
+            while s[1] not in ('end', 'burst'):
+                a, r, ns = take_determined_action(s, a)
+                na = np.random.choice((0, 1), p=pi[ns])
+                q[(s, a)] += alfa*(r + gamma*q[(ns, na)] - q[(s, a)])
+                pi[s] = soften(greedy(s, q), eps)
+                s = ns; a = na
+
+        return pi, q, get_value(pi, q)
+
+class TDQlearningAlgorithm:
+    @staticmethod
+    def train(gamma, eps, alfa, n_episodes):
+        q = dict()
+        pi = dict()
+        for s in all_states:
+            q[(s, 0)] = np.random.normal(0, 0.1)
+            q[(s, 1)] = np.random.normal(0, 0.1)
+            pi[s] = soften(greedy(s, q), eps)
+
+        for s in [(-1, 'end', -1), (-1, 'burst', -1)]:
+            pi[s] = (0, 1)
+            for a in (0, 1):
+                q[(s, a)] = 0
+
+        for i in range(n_episodes):
+            while True:
+                s = get_start_state()
+                if s[1] not in ("tie", "natural"):
+                    break
+            while s[1] not in ('end', 'burst'):
+                a, r, ns = take_action(s, pi)
+                q[(s, a)] += alfa*(r + gamma*max(q[(ns, STICK)], q[(ns, HIT)]) - q[(s, a)])
+                pi[s] = soften(greedy(s, q), eps)
+                s = ns
+
+        return pi, q, get_value(pi, q)
+
 
 
 

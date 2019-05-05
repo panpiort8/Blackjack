@@ -28,10 +28,15 @@ def evaluate_and_print(name, games, pi):
 opt = load_optimal()
 pi_es, q_es, v_es = MCExploringStartsAlgorithm.train(1, 10000)
 pi_ep, q_ep, v_ep = MCEpsiSoftAlgorithm.train(1, 0.01, 10000)
+pi_sar, q_sar, v_sar = TDSarsaAlgorithm.train(1, 0.01, 1, 10000)
+pi_ql, q_ql, v_ql = TDQlearningAlgorithm.train(1, 0.01, 1, 10000)
 
-# evaluate_and_print("OPT", 10000, opt)
-evaluate_and_print("PI", 10000, pi_es)
-evaluate_and_print("PI", 10000, pi_ep)
+eval_episodes = 10000
+evaluate_and_print("OPT", eval_episodes, opt)
+evaluate_and_print("MCES", eval_episodes, pi_es)
+evaluate_and_print("MCSOFT", eval_episodes, pi_ep)
+evaluate_and_print("TDSAR", eval_episodes, pi_sar)
+evaluate_and_print("TDQL", eval_episodes, pi_ql)
 
 
 

@@ -28,16 +28,6 @@ def process_card(hand, ace_in_use, card):
     return hand, ace_in_use
 
 
-# returns new state s=(player_hand, dealer_card, ace_in_use), reward
-def hit(s):
-    hand, dealer, ace_in_use = s
-    hand, ace_in_use = process_card(hand, ace_in_use, get_card())
-
-    if hand > 21:
-        return (-1, -1, -1), -1
-    else:
-        return (hand, dealer, ace_in_use), 0
-
 # returns dealer_hand
 def simulate_dealer(dealer_hand):
     dealer_ace_in_use = dealer_hand == 11
@@ -47,31 +37,48 @@ def simulate_dealer(dealer_hand):
 
     return dealer_hand
 
+def hit(s):
+    hand, dealer, ace_in_use = s
+    hand, ace_in_use = process_card(hand, ace_in_use, get_card())
+
+    if hand > 21:
+        return -1, (-1, "burst", -1)
+    else:
+        return 0, (hand, dealer, ace_in_use)
+
+
 def stick(s):
     hand, dealer_hand, ace_in_use = s
     dealer_hand = simulate_dealer(dealer_hand)
 
     if dealer_hand > 21 or dealer_hand < hand:
-        return 1
-    if dealer_hand > hand:
-        return -1
-    if dealer_hand == hand:
-        return 0
+        r = 1
+    elif dealer_hand > hand:
+        r =  -1
+    else:
+        r = 0
+
+    return r, (-1, "end", -1)
+
+def take_determined_action(s, a):
+    if a == HIT:
+        r, ns = hit(s)
+    else:
+        r, ns = stick(s)
+    return a, r, ns
+
+def take_action(s, pi):
+    a = np.random.choice((0, 1), p=pi[s])
+    return take_determined_action(s, a)
 
 def generate_episode(s, pi):
     episode=[]
     while True:
-        a = np.random.choice((0, 1), p=pi[s])
-        if a == HIT:
-            ns, r = hit(s)
-            episode.append((s, HIT, r))
-            if ns == (-1, -1, -1):
-                return episode
-            s = ns
-        else:
-            r = stick(s)
-            episode.append((s, STICK, r))
+        a, r, ns = take_action(s, pi)
+        episode.append((s, a, r))
+        if ns[1] in ('burst', 'end'):
             return episode
+        s = ns
 
 def get_start_state():
     hand = 0; usable_ace = False
