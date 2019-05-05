@@ -17,8 +17,8 @@ def load_optimal():
             else:
                 a = STICK
         opt[s] = (1-a, a)
-    return opt
-
+    q = evaluate_q(opt, 1, 1000)
+    return opt, q, get_value(opt, q)
 
 def get_value(pi, q):
     v = dict()
@@ -28,24 +28,53 @@ def get_value(pi, q):
         v[s] = s1+s2
     return v
 
-def soften(a, eps):
-    return (1-eps, eps) if a == 0 else (eps, 1-eps)
+def evaluate_q(pi, gamma, n_episodes):
+    q, _ = Algorithm.initialize()
+    alfa = 1
+    for s in [(-1, 'end', -1), (-1, 'burst', -1)]:
+        pi[s] = (0, 1)
+        for a in (0, 1):
+            q[(s, a)] = 0
+
+    for i in range(n_episodes):
+        s = random.choice(all_states)
+        while s[1] not in ('end', 'burst'):
+            a, r, ns = take_action(s, pi)
+            q[(s, a)] += alfa * (r + gamma * max(q[(ns, STICK)], q[(ns, HIT)]) - q[(s, a)])
+            s = ns
+    return q
+
+
+def soften(prob, eps):
+    return (1-eps, eps) if prob == (1, 0) else (eps, 1-eps)
+
+def soften_pi(pi, eps):
+    for s in all_states:
+        pi[s] = soften(pi[s], eps)
+    return pi
 
 def greedy(s, q):
-    return HIT if q[(s, HIT)] > q[(s, STICK)] else STICK
+    a = HIT if q[(s, HIT)] > q[(s, STICK)] else STICK
+    return (1-a, a)
 
-class MCExploringStartsAlgorithm:
+class Algorithm:
     @staticmethod
-    def train(gamma, n_episodes):
+    def initialize():
         q = dict()
-        qCounters = dict()
         pi = dict()
         for s in all_states:
-            q[(s, 0)] = 0
-            q[(s, 1)] = 0
-            qCounters[(s, 0)] = 0
-            qCounters[(s, 1)] = 0
-            pi[s] = random.choice(((1, 0), (0, 1)))
+            q[(s, 0)] = np.random.normal(0, 0.1)
+            q[(s, 1)] = np.random.normal(0, 0.1)
+            pi[s] = greedy(s, q)
+        return q, pi
+
+class MCExploringStartsAlgorithm(Algorithm):
+    @staticmethod
+    def train(gamma, n_episodes):
+        q, pi = Algorithm.initialize()
+        qCounters = dict()
+        for s in all_states:
+            qCounters[(s, 0)] = qCounters[(s, 1)] = 0
 
         for i in range(n_episodes):
             episode = generate_episode(random.choice(all_states), pi)
@@ -62,23 +91,19 @@ class MCExploringStartsAlgorithm:
                 qCounters[sa] += 1
                 q[sa] = q[sa] + 1 / qCounters[sa] * (r - q[sa])
                 s, a = sa
-                a = greedy(s, q)
-                pi[s] = (1-a, a)
+                pi[s] = greedy(s, q)
 
         return pi, q, get_value(pi, q)
 
 class MCEpsiSoftAlgorithm:
     @staticmethod
     def train(gamma, eps, n_episodes):
-        q = dict()
+        q, pi = Algorithm.initialize()
+        pi = soften_pi(pi, eps)
         qCounters = dict()
-        pi = dict()
         for s in all_states:
-            q[(s, 0)] = 0
-            q[(s, 1)] = 0
-            qCounters[(s, 0)] = 0
-            qCounters[(s, 1)] = 0
-            pi[s] = random.choice(((1-eps, eps), (eps, 1-eps)))
+            qCounters[(s, 0)] = qCounters[(s, 1)] = 0
+
 
         for i in range(n_episodes):
             while True:
@@ -99,20 +124,15 @@ class MCEpsiSoftAlgorithm:
                 qCounters[sa] += 1
                 q[sa] = q[sa] + 1 / qCounters[sa] * (r - q[sa])
                 s, _ = sa
-                a = greedy(s, q)
-                pi[s] = soften(a, eps)
+                pi[s] = soften(greedy(s, q), eps)
 
         return pi, q, get_value(pi, q)
 
 class TDSarsaAlgorithm:
     @staticmethod
     def train(gamma, eps, alfa, n_episodes):
-        q = dict()
-        pi = dict()
-        for s in all_states:
-            q[(s, 0)] = np.random.normal(0, 0.1)
-            q[(s, 1)] = np.random.normal(0, 0.1)
-            pi[s] = soften(greedy(s, q), eps)
+        q, pi = Algorithm.initialize()
+        pi = soften_pi(pi, eps)
 
         for s in [(-1, 'end', -1), (-1, 'burst', -1)]:
             pi[s] = (0, 1)
@@ -137,12 +157,8 @@ class TDSarsaAlgorithm:
 class TDQlearningAlgorithm:
     @staticmethod
     def train(gamma, eps, alfa, n_episodes):
-        q = dict()
-        pi = dict()
-        for s in all_states:
-            q[(s, 0)] = np.random.normal(0, 0.1)
-            q[(s, 1)] = np.random.normal(0, 0.1)
-            pi[s] = soften(greedy(s, q), eps)
+        q, pi = Algorithm.initialize()
+        pi = soften_pi(pi, eps)
 
         for s in [(-1, 'end', -1), (-1, 'burst', -1)]:
             pi[s] = (0, 1)
@@ -161,7 +177,4 @@ class TDQlearningAlgorithm:
                 s = ns
 
         return pi, q, get_value(pi, q)
-
-
-
 

@@ -27,7 +27,6 @@ def process_card(hand, ace_in_use, card):
 
     return hand, ace_in_use
 
-
 # returns dealer_hand
 def simulate_dealer(dealer_hand):
     dealer_ace_in_use = dealer_hand == 11
@@ -45,7 +44,6 @@ def hit(s):
         return -1, (-1, "burst", -1)
     else:
         return 0, (hand, dealer, ace_in_use)
-
 
 def stick(s):
     hand, dealer_hand, ace_in_use = s
