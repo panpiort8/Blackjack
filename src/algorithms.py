@@ -92,7 +92,7 @@ class Algorithm:
 
 
 class MCExploringStartsAlgorithm(Algorithm):
-    def __init__(self, gamma):
+    def __init__(self, gamma, **kwargs):
         self.gamma = gamma
 
     def initialize(self):
@@ -120,7 +120,7 @@ class MCExploringStartsAlgorithm(Algorithm):
 
 
 class QEvaluateAlgorithm(MCExploringStartsAlgorithm):
-    def __init__(self, pi):
+    def __init__(self, pi, **kwargs):
         super().__init__(1)
         self.constpi = pi
 
@@ -150,7 +150,7 @@ def evaluate_q(pi):
 
 
 class MCEpsiSoftAlgorithm(MCExploringStartsAlgorithm):
-    def __init__(self, gamma, eps):
+    def __init__(self, gamma, eps, **kwargs):
         super().__init__(gamma)
         self.eps = eps
 
@@ -180,7 +180,7 @@ class MCEpsiSoftAlgorithm(MCExploringStartsAlgorithm):
 
 
 class TDSarsaAlgorithm(Algorithm):
-    def __init__(self, gamma, eps, alfa):
+    def __init__(self, gamma, eps, alfa, **kwargs):
         self.gamma = gamma
         self.eps = eps
         self.alfa = alfa

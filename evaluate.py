@@ -24,22 +24,38 @@ def evaluate_and_print(name, games, pi):
           format(100*wins/games, 100*draws/games, 100*looses/games, sum/games, name))
 
 # training part
-train_episodes = 1000
+train_episodes = 25000
 eval_episodes = 10000
 
-mces = MCExploringStartsAlgorithm(gamma=1)
+mces = MCExploringStartsAlgorithm(gamma=1, eps = 1.0)
 mcsoft = MCEpsiSoftAlgorithm(gamma=1, eps=0.01)
 tdsar = TDSarsaAlgorithm(gamma=1, eps=0.01, alfa=0.1)
 tdql = TDQlearningAlgorithm(gamma=1, eps=0.01, alfa=0.1)
-mces.train(train_episodes)
-mcsoft.train(train_episodes)
-tdsar.train(train_episodes)
-tdql.train(train_episodes)
+
+widgets = ["MCES training:    ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+pbar = progressbar.ProgressBar(maxval=train_episodes, widgets=widgets).start()
+mces.train(train_episodes, pbar=pbar)
+pbar.finish()
+
+widgets = ["MCSOFT training:  ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+pbar = progressbar.ProgressBar(maxval=train_episodes, widgets=widgets).start()
+mcsoft.train(train_episodes, pbar=pbar)
+pbar.finish()
+
+widgets = ["TDSARSA training: ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+pbar = progressbar.ProgressBar(maxval=train_episodes, widgets=widgets).start()
+tdsar.train(train_episodes, pbar=pbar)
+pbar.finish()
+
+widgets = ["TDQL training:    ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
+pbar = progressbar.ProgressBar(maxval=train_episodes, widgets=widgets).start()
+tdql.train(train_episodes, pbar=pbar)
+pbar.finish()
 
 pi_opt, q_opt, v_opt = load_optimal()
 evaluate_and_print("OPT", eval_episodes, pi_opt)
 evaluate_and_print("MCES", eval_episodes, mces.get_pi())
 evaluate_and_print("MCSOFT", eval_episodes, mcsoft.get_pi())
-evaluate_and_print("TDSAR", eval_episodes, tdsar.get_pi())
+evaluate_and_print("TDSARSA", eval_episodes, tdsar.get_pi())
 evaluate_and_print("TDQL", eval_episodes, tdql.get_pi())
 
