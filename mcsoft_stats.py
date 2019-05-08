@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-from algorithms import *
+from src.algorithms import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-episodes = 1000
-trainings = 2
-params = [(1, 0.01), (0.5, 0.1)]
+episodes = 25000
+trainings = 20
+params = [(1, 0.01), (0.9, 0.01), (0.5, 0.01), (1, 0.1)]
 
 stats = [ [] for i in params]
 for p, (gamma, eps) in enumerate(params):
     for i in range(trainings):
+        print("{}/{}:".format((p * trainings + i + 1), trainings * len(params)))
         pi_es, q_es, v_es, stats_part = MCEpsiSoftAlgorithm.train(gamma, eps, episodes, ValueFunctionStats())
         stats[p].append(stats_part)
 
@@ -17,7 +18,7 @@ plt.style.use('ggplot')
 plt.figure()
 plt.title('MCSOFT comparison (gamma, eps)')
 plt.xlabel('Episodes')
-plt.ylabel('Sum of value function')
+plt.ylabel('Sum of value function over states')
 jmp = episodes//len(stats[0][0])
 y = [i for i in range(jmp, episodes+1, jmp)]
 
@@ -31,4 +32,5 @@ for i, pars in enumerate(params):
     plt.plot(y, stat, label=str(pars))
 
 plt.legend()
-plt.show()
+name = "graphs/mcsoft-{}-{}.jpg".format(episodes, trainings)
+plt.savefig(name)

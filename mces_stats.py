@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-from algorithms import *
+from src.algorithms import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-episodes = 1000
-trainings = 2
-params = [(1), (0.5)]
+episodes = 25000
+trainings = 20
+params = [(1), (0.9), (0.5), (0.2)]
 
 stats = [ [] for i in params]
 for p, (gamma) in enumerate(params):
     for i in range(trainings):
+        print("{}/{}:".format((p*trainings + i + 1), trainings*len(params)))
         pi_es, q_es, v_es, stats_part = MCExploringStartsAlgorithm.train(gamma, episodes, ValueFunctionStats())
         stats[p].append(stats_part)
 
@@ -17,7 +18,7 @@ plt.style.use('ggplot')
 plt.figure()
 plt.title('MCES comparison (gamma)')
 plt.xlabel('Episodes')
-plt.ylabel('Sum of value function')
+plt.ylabel('Sum of value function over states')
 jmp = episodes//len(stats[0][0])
 y = [i for i in range(jmp, episodes+1, jmp)]
 
@@ -31,4 +32,5 @@ for i, pars in enumerate(params):
     plt.plot(y, stat, label=str(pars))
 
 plt.legend()
-plt.show()
+name = "graphs/mces-{}-{}.jpg".format(episodes, trainings)
+plt.savefig(name)
