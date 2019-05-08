@@ -32,7 +32,7 @@ Y, stats, labels = generate_stats(params, episodes, trainings, MCEpsiSoftAlgorit
 insert_opt(stats, labels, Y)
 get_plot(Y, stats, labels, title="MCSOFT (gamma, eps)", ylabel=ylabel).savefig(name)
 
-params = [(1, 0.01, 0.5), (1, 0.01, 0.2), (1, 0.01, 0.1), (1, 0.01, 0.05)]
+params = [(1, 0.01, 0.2), (1, 0.01, 0.1), (1, 0.01, 0.05), (0.5, 0.01, 0.2), (0.5, 0.01, 0.1)]
 algo_name = "TDSARSA"
 print('{}: evaluating {} sets of params. Result averaged over {} trainings each of {} episodes.'.format(algo_name, len(params), trainings, episodes))
 name = "graphs/{}-{}-{}.jpg".format(algo_name, episodes, trainings)
@@ -40,7 +40,7 @@ Y, stats, labels = generate_stats(params, episodes, trainings, TDSarsaAlgorithm,
 insert_opt(stats, labels, Y)
 get_plot(Y, stats, labels, title="TDSARSA (gamma, eps, alfa)", ylabel=ylabel).savefig(name)
 
-params = [(1, 0.01, 0.5), (1, 0.01, 0.2), (1, 0.01, 0.1), (1, 0.01, 0.05)]
+params = [(1, 0.01, 0.2), (1, 0.01, 0.1), (1, 0.01, 0.05), (0.5, 0.01, 0.2), (0.5, 0.01, 0.1)]
 algo_name = "TDQL"
 print('{}: evaluating {} sets of params. Result averaged over {} trainings each of {} episodes.'.format(algo_name, len(params), trainings, episodes))
 name = "graphs/{}-{}-{}.jpg".format(algo_name, episodes, trainings)

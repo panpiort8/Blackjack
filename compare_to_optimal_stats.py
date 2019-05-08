@@ -14,14 +14,14 @@ opt, q, v = load_optimal()
 stats = []
 labels = []
 
-params = [(1,)]
+params = [(0.5,)]
 algo_name = "MCES {}".format(params[0])
 print('{}: evaluating similarity to optimal. Result averaged over {} trainings each of {} episodes.'.format(algo_name, trainings, episodes))
 Y, stat, _ = generate_stats(params, episodes, trainings, MCExploringStartsAlgorithm, SimilarityToOptimal, args=opt)
 stats.append(stat[0])
 labels.append(algo_name)
 
-params = [(1, 0.01)]
+params = [(0.5, 0.01)]
 algo_name = "MSOFT {}".format(params[0])
 print('{}: evaluating similarity to optimal. Result averaged over {} trainings each of {} episodes.'.format(algo_name, trainings, episodes))
 Y, stat, _ = generate_stats(params, episodes, trainings, MCEpsiSoftAlgorithm, SimilarityToOptimal, args=opt)
@@ -35,7 +35,7 @@ Y, stat, _ = generate_stats(params, episodes, trainings, TDSarsaAlgorithm, Simil
 stats.append(stat[0])
 labels.append(algo_name)
 
-params = [(1, 0.01, 0.2)]
+params = [(1, 0.01, 0.1)]
 algo_name = "TDQL {}".format(params[0])
 print('{}: evaluating similarity to optimal. Result averaged over {} trainings each of {} episodes.'.format(algo_name, trainings, episodes))
 Y, stat, _ = generate_stats(params, episodes, trainings, TDQlearningAlgorithm, SimilarityToOptimal, args=opt)
@@ -43,4 +43,4 @@ stats.append(stat[0])
 labels.append(algo_name)
 
 name = "graphs/similarity-{}-{}.jpg".format(episodes, trainings)
-get_plot(Y, stats, labels, title="Similarity to optimal stratefy", ylabel=ylabel).savefig(name)
+get_plot(Y, stats, labels, title="Similarity to optimal strategy", ylabel=ylabel).savefig(name)

@@ -20,7 +20,7 @@ def evaluate_and_print(name, games, pi):
     l = 10
     while len(name) < l:
         name += " "
-    print("{4} wins: {0:.0f}%    draws: {1:.0f}%    looses: {2:.0f}%    avg v(s): {3:.3f}".
+    print("{4} wins: {0:.0f}%    draws: {1:.0f}%    looses: {2:.0f}%    avg reward: {3:.3f}".
           format(100*wins/games, 100*draws/games, 100*looses/games, sum/games, name))
 
 
@@ -33,9 +33,9 @@ args = vars(ap.parse_args())
 train_episodes = args["train_episodes"]
 eval_episodes = args["eval_episodes"]
 
-mces = MCExploringStartsAlgorithm(gamma=1, eps = 1.0)
+mces = MCExploringStartsAlgorithm(gamma=0.5)
 mcsoft = MCEpsiSoftAlgorithm(gamma=1, eps=0.01)
-tdsar = TDSarsaAlgorithm(gamma=1, eps=0.01, alfa=0.1)
+tdsar = TDSarsaAlgorithm(gamma=1, eps=0.01, alfa=0.2)
 tdql = TDQlearningAlgorithm(gamma=1, eps=0.01, alfa=0.1)
 
 widgets = ["MCES training:    ", progressbar.Percentage(), " ", progressbar.Bar(), " ", progressbar.ETA()]
@@ -59,7 +59,7 @@ tdql.train(train_episodes, pbar=pbar)
 pbar.finish()
 
 pi_opt, q_opt, v_opt = load_optimal()
-evaluate_and_print("OPT", eval_episodes, pi_opt)
+evaluate_and_print("OPTIMAL", eval_episodes, pi_opt)
 evaluate_and_print("MCES", eval_episodes, mces.get_pi())
 evaluate_and_print("MCSOFT", eval_episodes, mcsoft.get_pi())
 evaluate_and_print("TDSARSA", eval_episodes, tdsar.get_pi())
