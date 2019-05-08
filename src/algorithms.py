@@ -52,8 +52,6 @@ def get_nontrivial_start_state():
 
 
 
-
-
 class Algorithm:
     def initialize(self):
         self.q = dict()

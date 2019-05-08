@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from src.algorithms import *
-
+import argparse
 
 def evaluate(games, pi):
     wins = 0; draws = 0; looses = 0; sum=0
@@ -20,12 +20,18 @@ def evaluate_and_print(name, games, pi):
     l = 10
     while len(name) < l:
         name += " "
-    print("{4} wins: {0:.0f}%    draws: {1:.0f}%    looses: {2:.0f}%    avg: {3:.3f}".
+    print("{4} wins: {0:.0f}%    draws: {1:.0f}%    looses: {2:.0f}%    avg v(s): {3:.3f}".
           format(100*wins/games, 100*draws/games, 100*looses/games, sum/games, name))
 
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-e", "--train_episodes", type=int, required=True)
+ap.add_argument("-v", "--eval_episodes", type=int, default=10000)
+args = vars(ap.parse_args())
+
 # training part
-train_episodes = 25000
-eval_episodes = 10000
+train_episodes = args["train_episodes"]
+eval_episodes = args["eval_episodes"]
 
 mces = MCExploringStartsAlgorithm(gamma=1, eps = 1.0)
 mcsoft = MCEpsiSoftAlgorithm(gamma=1, eps=0.01)

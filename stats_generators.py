@@ -73,8 +73,6 @@ def generate_stats(params, episodes, trainings, algoClass, statsClass, args = No
     for i, par in enumerate(params):
         stats[i] = np.average(np.array(stats[i]), axis=0)
         labels.append(str(par))
-    sum = 20
-    stats.append([sum for i in range(len(Y))])
-    labels.append('optimal')
+
 
     return Y, stats, labels
